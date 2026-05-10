@@ -2,17 +2,40 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Discovery from './pages/Discovery';
+import Community from './pages/Community';
+import Billing from './pages/Billing';
 import CreateTrip from './pages/CreateTrip';
 import Trips from './pages/Trips';
 import Itinerary from './pages/Itinerary';
 import Budget from './pages/Budget';
 import Checklist from './pages/Checklist';
 import Journal from './pages/Journal';
+import Layout from './components/Layout';
 
-const isLoggedIn = () => !!localStorage.getItem('traveloop_user');
+import Search from './pages/Search';
+import Admin from './pages/Admin';
+
+import { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 
 const ProtectedRoute = ({ children }) => {
-  return isLoggedIn() ? children : <Navigate to="/login" />;
+  const [session, setSession] = useState(undefined);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (session === undefined) return <div className="p-12 text-center">Loading...</div>;
+  return session ? <Layout>{children}</Layout> : <Navigate to="/login" />;
 };
 
 export default function App() {
@@ -22,6 +45,10 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        
+        <Route path="/discovery" element={
+          <ProtectedRoute><Discovery /></ProtectedRoute>
+        } />
         <Route path="/dashboard" element={
           <ProtectedRoute><Dashboard /></ProtectedRoute>
         } />
@@ -30,6 +57,9 @@ export default function App() {
         } />
         <Route path="/trips" element={
           <ProtectedRoute><Trips /></ProtectedRoute>
+        } />
+        <Route path="/search" element={
+          <ProtectedRoute><Search /></ProtectedRoute>
         } />
         <Route path="/itinerary/:id" element={
           <ProtectedRoute><Itinerary /></ProtectedRoute>
@@ -43,7 +73,17 @@ export default function App() {
         <Route path="/journal" element={
           <ProtectedRoute><Journal /></ProtectedRoute>
         } />
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="/community" element={
+          <ProtectedRoute><Community /></ProtectedRoute>
+        } />
+        <Route path="/billing" element={
+          <ProtectedRoute><Billing /></ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute><Admin /></ProtectedRoute>
+        } />
+        
+        <Route path="*" element={<Navigate to="/discovery" />} />
       </Routes>
     </Router>
   );
