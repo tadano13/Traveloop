@@ -61,6 +61,3 @@ Traveloop is a premium, feature-rich travel planning application designed to hel
 - `src/lib`: External library configurations (Supabase client).
 - `src/index.css`: Global styles and Tailwinds configuration.
 
-## 📝 License
-
-This project is open-source and available under the [MIT License](LICENSE).
