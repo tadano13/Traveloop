@@ -1,3 +1,9 @@
+# Odoo x Parul University Hackathon 26
+## Team members 
+- Nishant
+- Pawan
+- Ajeet
+- shubham
 # 🌍 Traveloop - Professional Travel Planning App
 
 Traveloop is a premium, feature-rich travel planning application designed to help travelers organize their journeys with ease and style. From budget tracking to itinerary building and memory journaling, Traveloop is the ultimate companion for your next adventure.
