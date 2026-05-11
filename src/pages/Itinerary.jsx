@@ -25,7 +25,10 @@ export default function Itinerary() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
+<<<<<<< HEAD
   // Form State
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
   const [newItem, setNewItem] = useState({
     title: '',
     cost: '',
@@ -105,7 +108,10 @@ export default function Itinerary() {
 
   const activeItems = items.filter(item => item.section === activeTab);
   
+<<<<<<< HEAD
   // Totals
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
   const travelTotal = items.filter(i => i.section === 'travel').reduce((sum, i) => sum + Number(i.cost), 0);
   const hotelTotal = items.filter(i => i.section === 'hotel').reduce((sum, i) => sum + Number(i.cost), 0);
   const activityTotal = items.filter(i => i.section === 'activities').reduce((sum, i) => sum + Number(i.cost), 0);
@@ -137,7 +143,10 @@ export default function Itinerary() {
         </div>
       </header>
 
+<<<<<<< HEAD
       {/* Builder Sections Tabs */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <div className="flex gap-4 mb-8 bg-white p-2 rounded-2xl shadow-sm border overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -159,7 +168,10 @@ export default function Itinerary() {
         })}
       </div>
 
+<<<<<<< HEAD
       {/* Section Content */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border">
@@ -175,7 +187,10 @@ export default function Itinerary() {
             </button>
           </div>
 
+<<<<<<< HEAD
           {/* Add Form */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           {showForm && (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-black">
               <h3 className="font-bold text-lg mb-4">Add {activeTab} plan</h3>
@@ -220,7 +235,10 @@ export default function Itinerary() {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Items List */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           {activeItems.length === 0 && !showForm ? (
             <div className="bg-white p-12 rounded-2xl border border-dashed border-gray-300 text-center">
               <div className={`w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center ${tabs.find(t => t.id === activeTab).bg} ${tabs.find(t => t.id === activeTab).color}`}>
@@ -271,7 +289,10 @@ export default function Itinerary() {
           )}
         </div>
 
+<<<<<<< HEAD
         {/* Right Sidebar - Summary */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="space-y-6">
            <div className="bg-white p-6 rounded-2xl shadow-sm border">
               <h3 className="font-bold text-lg mb-6 flex items-center gap-2">

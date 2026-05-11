@@ -17,7 +17,10 @@ export default function Dashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate('/login'); return; }
 
+<<<<<<< HEAD
     // 1. Fetch Profile
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
@@ -26,7 +29,10 @@ export default function Dashboard() {
     
     setProfile(profileData);
 
+<<<<<<< HEAD
     // 2. Fetch Trips
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
     const { data: tripsData } = await supabase
       .from('trips')
       .select('*')
@@ -49,7 +55,10 @@ export default function Dashboard() {
         </button>
       </header>
 
+<<<<<<< HEAD
       {/* Stats Quick View */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div className="card p-6 border-none shadow-sm flex items-center gap-5">
            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
@@ -80,9 +89,13 @@ export default function Dashboard() {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Main Content Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Recent Trips List */}
+=======
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-900">Recent Itineraries</h2>
@@ -130,7 +143,10 @@ export default function Dashboard() {
           )}
         </div>
 
+<<<<<<< HEAD
         {/* Sidebar / Quick Tools */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="space-y-8">
            <div>
               <h2 className="text-xl font-bold mb-6 text-slate-900">Quick Tools</h2>

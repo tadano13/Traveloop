@@ -34,7 +34,10 @@ export default function Signup() {
     setLoading(true);
     
     try {
+<<<<<<< HEAD
       // 1. Create Auth User in Supabase
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
@@ -43,7 +46,10 @@ export default function Signup() {
       if (authError) throw authError;
 
       if (authData.user) {
+<<<<<<< HEAD
         // 2. Upsert Profile — works whether trigger created the row or not
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert(
@@ -60,8 +66,11 @@ export default function Signup() {
             { onConflict: 'id' }
           );
 
+<<<<<<< HEAD
         // If RLS blocks it (email not confirmed yet), we still proceed —
         // the trigger will have created a blank profile row automatically.
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         if (profileError && profileError.code !== '42501') {
           throw profileError;
         }

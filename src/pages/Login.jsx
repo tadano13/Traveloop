@@ -35,13 +35,19 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
       <div className="w-full max-w-md">
         <div className="card p-8 text-center">
+<<<<<<< HEAD
           {/* Brand */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           <div className="mb-8">
             <h1 className="text-3xl brand" style={{ color: 'var(--primary)' }}>Traveloop</h1>
             <p className="text-sm text-gray-500">Plan your next adventure with us</p>
           </div>
 
+<<<<<<< HEAD
           {/* Photo Placeholder */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           <div className="w-24 h-24 rounded-full bg-gray-100 mx-auto mb-8 flex items-center justify-center border-2 border-dashed border-gray-300">
             <span className="text-gray-400 text-xs">Photo</span>
           </div>

@@ -67,7 +67,10 @@ export default function Journal() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+<<<<<<< HEAD
       {/* Navbar */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-slate-900 transition-colors p-2 hover:bg-slate-50 rounded-full">
@@ -85,7 +88,6 @@ export default function Journal() {
 
       <div className="max-w-3xl mx-auto px-6 md:px-12 py-8">
 
-        {/* Add Note Form */}
         {showForm && (
           <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm mb-8">
             <div className="flex items-center justify-between mb-6">
@@ -139,7 +141,10 @@ export default function Journal() {
           </div>
         )}
 
+<<<<<<< HEAD
         {/* Filter Tabs */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="flex gap-2 flex-wrap mb-8">
           <button onClick={() => setFilter('All')}
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${filter === 'All' ? 'bg-blue-600 text-white border-transparent shadow-md shadow-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}>
@@ -153,7 +158,6 @@ export default function Journal() {
           ))}
         </div>
 
-        {/* Empty State */}
         {filtered.length === 0 && (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm">
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -168,7 +172,10 @@ export default function Journal() {
           </div>
         )}
 
+<<<<<<< HEAD
         {/* Notes Grid */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="space-y-4">
           {filtered.map(note => {
             const mood = getMood(note.mood);

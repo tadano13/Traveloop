@@ -104,7 +104,10 @@ export default function Checklist() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+<<<<<<< HEAD
       {/* Navbar */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-slate-900 transition-colors p-2 hover:bg-slate-50 rounded-full">
@@ -121,7 +124,10 @@ export default function Checklist() {
 
       <div className="max-w-3xl mx-auto px-6 md:px-12 py-8">
 
+<<<<<<< HEAD
         {/* Progress */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
@@ -143,7 +149,10 @@ export default function Checklist() {
           )}
         </div>
 
+<<<<<<< HEAD
         {/* Category Stats */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
           {categories.map(cat => {
             const Icon = cat.icon;
@@ -164,7 +173,10 @@ export default function Checklist() {
           })}
         </div>
 
+<<<<<<< HEAD
         {/* Add Item */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-8">
           <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
             <Plus className="w-5 h-5 text-blue-600" /> Add Item
@@ -196,7 +208,10 @@ export default function Checklist() {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Filter Tabs */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="flex gap-2 flex-wrap mb-6">
           {['All', 'unpacked'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
@@ -206,7 +221,10 @@ export default function Checklist() {
           ))}
         </div>
 
+<<<<<<< HEAD
         {/* Items List */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="space-y-3">
           {filtered.map(item => {
             const cat = getCat(item.category);

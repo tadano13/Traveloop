@@ -40,7 +40,10 @@ export default function Budget() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate('/login'); return; }
 
+<<<<<<< HEAD
     // Fetch Trip
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
     const { data: tripData } = await supabase
       .from('trips')
       .select('*')
@@ -48,14 +51,20 @@ export default function Budget() {
       .single();
 
     if (tripData) {
+<<<<<<< HEAD
       // Calculate days
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       const start = new Date(tripData.start_date || tripData.startDate);
       const end = new Date(tripData.end_date || tripData.endDate);
       tripData.days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 0;
       setTrip(tripData);
     }
 
+<<<<<<< HEAD
     // Fetch Itinerary Items (which serve as expenses)
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
     const { data: itemsData } = await supabase
       .from('itinerary_items')
       .select('*')
@@ -67,7 +76,11 @@ export default function Budget() {
         let auto = true;
         
         if (item.notes && categories.some(c => c.label === item.notes)) {
+<<<<<<< HEAD
           category = item.notes; // Manual expense category
+=======
+          category = item.notes;
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           auto = false;
         } else if (item.section === 'travel') {
           category = 'Transport';
@@ -94,10 +107,16 @@ export default function Budget() {
   const addExpense = async () => {
     if (!newExpense.name || !newExpense.amount) return;
 
+<<<<<<< HEAD
     // Use 'activities' section for manual expenses but store the category in 'notes'
     const itemData = {
       trip_id: id,
       section: 'activities', // Fallback section since we can't use custom ones
+=======
+    const itemData = {
+      trip_id: id,
+      section: 'activities',
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       title: newExpense.name,
       cost: Number(newExpense.amount),
       notes: newExpense.category || 'Other'
@@ -137,7 +156,6 @@ export default function Budget() {
   const remaining = totalBudget - totalSpent;
   const percentage = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
 
-  // Category wise breakdown
   const categoryTotals = categories.map(cat => ({
     ...cat,
     total: expenses.filter(e => e.category === cat.label).reduce((a, e) => a + e.amount, 0)
@@ -146,7 +164,10 @@ export default function Budget() {
   return (
     <div className="min-h-screen bg-slate-50">
 
+<<<<<<< HEAD
       {/* Navbar */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(`/itinerary/${id}`)} className="text-slate-400 hover:text-slate-900 transition-colors p-2 hover:bg-slate-50 rounded-full">
@@ -163,13 +184,19 @@ export default function Budget() {
 
       <div className="max-w-4xl mx-auto px-6 md:px-12 py-8">
 
+<<<<<<< HEAD
         {/* Budget Overview */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm mb-8">
           <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
             <PieChart className="w-6 h-6 text-slate-400" /> Budget Overview
           </h2>
 
+<<<<<<< HEAD
           {/* Big Numbers */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100">
               <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Total Budget</p>
@@ -187,7 +214,6 @@ export default function Budget() {
             </div>
           </div>
 
-          {/* Progress Bar */}
           <div className="mb-2">
             <div className="flex justify-between text-sm font-bold text-slate-500 mb-3">
               <span>Budget Used</span>
@@ -205,7 +231,10 @@ export default function Budget() {
             )}
           </div>
 
+<<<<<<< HEAD
           {/* Per Day */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           {trip?.days > 0 && (
             <div className="mt-6 p-4 rounded-xl flex justify-between items-center bg-blue-50 border border-blue-100">
               <span className="text-blue-600 font-bold text-sm flex items-center gap-2">
@@ -219,7 +248,10 @@ export default function Budget() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+<<<<<<< HEAD
           {/* Add Expense */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Plus className="w-5 h-5 text-blue-600" /> Add Expense
@@ -270,7 +302,10 @@ export default function Budget() {
           </div>
 
           <div className="space-y-8">
+<<<<<<< HEAD
             {/* Category Breakdown */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
             {categoryTotals.length > 0 && (
               <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                 <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -308,7 +343,10 @@ export default function Budget() {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Expense List */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="mt-8 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
             <Ticket className="w-5 h-5 text-green-600" /> All Expenses ({expenses.length})

@@ -76,7 +76,10 @@ export default function CreateTrip() {
           <p className="text-slate-500">Let's start by setting up the basics of your trip.</p>
         </header>
 
+<<<<<<< HEAD
         {/* Stepper */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
         <div className="flex items-center justify-center gap-4 mb-12">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center gap-4">
@@ -91,7 +94,10 @@ export default function CreateTrip() {
         </div>
 
         <div className="card p-8 bg-white border border-slate-200 shadow-sm min-h-[400px] flex flex-col rounded-3xl">
+<<<<<<< HEAD
           {/* Step 1: Basics */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           {step === 1 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold mb-6 text-slate-900">Trip Basics</h2>
@@ -140,7 +146,10 @@ export default function CreateTrip() {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Step 2: Dates */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           {step === 2 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold mb-6 text-slate-900">When are you going?</h2>
@@ -178,7 +187,10 @@ export default function CreateTrip() {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Step 3: Budget */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold mb-6 text-slate-900">Set Your Budget</h2>
@@ -212,7 +224,10 @@ export default function CreateTrip() {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Navigation */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
           <div className="mt-auto pt-10 flex gap-4">
             {step > 1 && (
               <button 

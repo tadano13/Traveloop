@@ -41,7 +41,11 @@ export default function Search() {
 
     const itemData = {
       trip_id: tripId,
+<<<<<<< HEAD
       section: 'activities', // Add as an activity by default
+=======
+      section: 'activities',
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       title: `Visit ${selectedDest.name}`,
       location: `${selectedDest.name}, ${selectedDest.country}`,
       cost: selectedDest.price,
@@ -89,7 +93,10 @@ export default function Search() {
         </div>
       </header>
 
+<<<<<<< HEAD
       {/* Grid */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredDestinations.map((dest) => (
           <div key={dest.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
@@ -141,7 +148,10 @@ export default function Search() {
         ))}
       </div>
 
+<<<<<<< HEAD
       {/* Modal */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       {selectedDest && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">

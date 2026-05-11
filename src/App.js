@@ -13,7 +13,10 @@ import Checklist from './pages/Checklist';
 import Journal from './pages/Journal';
 import Layout from './components/Layout';
 
+<<<<<<< HEAD
 // Placeholders for remaining pages
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
 import Search from './pages/Search';
 import Admin from './pages/Admin';
 

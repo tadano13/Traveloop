@@ -62,7 +62,10 @@ export default function Trips() {
         </button>
       </header>
 
+<<<<<<< HEAD
       {/* Filters & Search */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -89,7 +92,10 @@ export default function Trips() {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Trips Grid */}
+=======
+>>>>>>> 4dbf9276d2aa7ffcc438ac89259e3f2033fa321b
       {filteredTrips.length === 0 ? (
         <div className="card p-20 text-center bg-white border border-slate-200 shadow-sm rounded-2xl">
            <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-6">
