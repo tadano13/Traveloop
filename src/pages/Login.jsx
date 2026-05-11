@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -7,121 +8,91 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      const users = JSON.parse(localStorage.getItem('traveloop_users') || '[]');
-      const user = users.find(u => u.email === form.email && u.password === form.password);
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
 
-      if (user) {
-        localStorage.setItem('traveloop_user', JSON.stringify(user));
-        navigate('/dashboard');
-      } else {
-        setError('Invalid email or password');
-        setLoading(false);
+      if (authError) throw authError;
+
+      if (data.user) {
+        navigate('/discovery');
       }
-    }, 1000);
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #0d1117 0%, #1a1f3c 50%, #0d1117 100%)' }}>
-
-      {/* Background blobs */}
-      <div className="absolute top-[-100px] left-[-100px] w-96 h-96 rounded-full opacity-20"
-        style={{ background: 'radial-gradient(circle, #f5a623, transparent)' }} />
-      <div className="absolute bottom-[-100px] right-[-100px] w-96 h-96 rounded-full opacity-20"
-        style={{ background: 'radial-gradient(circle, #7c3aed, transparent)' }} />
-
-      <div className="w-full max-w-md px-6 z-10">
-
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f093fb)' }}>
-              ✈️
-            </div>
-            <span className="text-3xl font-bold"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f093fb)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Traveloop
-            </span>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+      <div className="w-full max-w-md">
+        <div className="card p-8 text-center">
+          {/* Brand */}
+          <div className="mb-8">
+            <h1 className="text-3xl brand" style={{ color: 'var(--primary)' }}>Traveloop</h1>
+            <p className="text-sm text-gray-500">Plan your next adventure with us</p>
           </div>
-          <p className="text-gray-400 text-sm">Your personalized travel planner</p>
-        </div>
 
-        {/* Card */}
-        <div className="p-8 rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <h2 className="text-2xl font-bold text-white mb-1">Welcome back 👋</h2>
-          <p className="text-gray-400 text-sm mb-6">Sign in to continue your journey</p>
+          {/* Photo Placeholder */}
+          <div className="w-24 h-24 rounded-full bg-gray-100 mx-auto mb-8 flex items-center justify-center border-2 border-dashed border-gray-300">
+            <span className="text-gray-400 text-xs">Photo</span>
+          </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl text-sm text-red-300"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
-              ⚠️ {error}
+            <div className="mb-4 p-3 rounded-md text-sm text-red-600 bg-red-50 border border-red-100">
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Email Address</label>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="text-left">
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Username / Email</label>
               <input
                 type="email"
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 required
-                className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="w-full px-4 py-3 rounded-md border border-gray-300 outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Password</label>
+            <div className="text-left">
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Password</label>
               <input
                 type="password"
                 placeholder="••••••••"
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 required
-                className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="w-full px-4 py-3 rounded-md border border-gray-300 outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
-            {/* Forgot */}
-            <div className="text-right">
-              <span className="text-xs cursor-pointer" style={{ color: '#f5a623' }}>
-                Forgot Password?
-              </span>
-            </div>
-
-            {/* Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all"
-              style={{ background: loading ? 'rgba(245,166,35,0.5)' : 'linear-gradient(135deg, #f5a623, #f093fb)' }}>
-              {loading ? '⏳ Signing in...' : '🚀 Sign In'}
+              className="btn-primary w-full py-3"
+            >
+              {loading ? 'Logging in...' : 'Login Button'}
             </button>
           </form>
 
-          <p className="text-center text-gray-400 text-sm mt-6">
+          <p className="mt-8 text-sm text-gray-500">
             Don't have an account?{' '}
-            <Link to="/signup" style={{ color: '#f5a623' }} className="font-semibold">
-              Sign up free
+            <Link to="/signup" className="font-semibold" style={{ color: 'var(--primary)' }}>
+              Register Here
             </Link>
           </p>
         </div>
-
-        <p className="text-center text-gray-600 text-xs mt-6">
-          © 2025 Traveloop. Made with ❤️ for travelers
-        </p>
       </div>
     </div>
   );

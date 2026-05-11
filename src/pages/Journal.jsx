@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import {
+  BookOpen, ArrowLeft, Plus, Trash2, Smile, Star, 
+  Wind, Moon, Mountain, Plane, Calendar, X
+} from 'lucide-react';
 
 export default function Journal() {
   const navigate = useNavigate();
@@ -8,162 +13,141 @@ export default function Journal() {
   const [newNote, setNewNote] = useState({ title: '', content: '', tripId: '', mood: '' });
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
 
   const moods = [
-    { label: 'Excited', emoji: '🤩' },
-    { label: 'Happy', emoji: '😊' },
-    { label: 'Relaxed', emoji: '😌' },
-    { label: 'Tired', emoji: '😴' },
-    { label: 'Adventurous', emoji: '🧗' },
+    { label: 'Excited', icon: Star, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+    { label: 'Happy', icon: Smile, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Relaxed', icon: Wind, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+    { label: 'Tired', icon: Moon, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'Adventurous', icon: Mountain, color: 'text-orange-600', bg: 'bg-orange-50' },
   ];
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('traveloop_user') || 'null');
+  useEffect(() => { fetchData(); }, [navigate]);
+
+  const fetchData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate('/login'); return; }
-    const allTrips = JSON.parse(localStorage.getItem('traveloop_trips') || '[]');
-    setTrips(allTrips.filter(t => t.userId === user.id));
-    const savedNotes = JSON.parse(localStorage.getItem('traveloop_journal') || '[]');
-    setNotes(savedNotes.filter(n => n.userId === user.id));
-  }, [navigate]);
 
-  const saveNote = () => {
-    if (!newNote.title || !newNote.content) return;
-    const user = JSON.parse(localStorage.getItem('traveloop_user'));
-    const note = {
-      id: Date.now(),
-      userId: user.id,
-      title: newNote.title,
-      content: newNote.content,
-      tripId: newNote.tripId,
-      mood: newNote.mood,
-      createdAt: new Date().toISOString(),
-      tripName: trips.find(t => t.id === parseInt(newNote.tripId))?.name || 'General'
-    };
-    const allNotes = JSON.parse(localStorage.getItem('traveloop_journal') || '[]');
-    allNotes.push(note);
-    localStorage.setItem('traveloop_journal', JSON.stringify(allNotes));
-    setNotes(prev => [note, ...prev]);
-    setNewNote({ title: '', content: '', tripId: '', mood: '' });
-    setShowForm(false);
+    const { data: tripsData } = await supabase.from('trips').select('id, name').eq('user_id', user.id);
+    setTrips(tripsData || []);
+
+    const { data: notesData } = await supabase
+      .from('notes').select('*, trips ( name )').eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    setNotes(notesData || []);
+    setLoading(false);
   };
 
-  const deleteNote = (id) => {
-    const allNotes = JSON.parse(localStorage.getItem('traveloop_journal') || '[]');
-    const updated = allNotes.filter(n => n.id !== id);
-    localStorage.setItem('traveloop_journal', JSON.stringify(updated));
-    setNotes(prev => prev.filter(n => n.id !== id));
+  const saveNote = async () => {
+    if (!newNote.title || !newNote.content) { alert('Title and content are required'); return; }
+    if (!newNote.tripId) { alert('Please select a trip for this note'); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase.from('notes')
+      .insert([{ user_id: user.id, trip_id: newNote.tripId, title: newNote.title, content: newNote.content, mood: newNote.mood }])
+      .select('*, trips(name)').single();
+    if (error) { alert('Error saving note: ' + error.message); return; }
+    if (data) { setNotes([data, ...notes]); setNewNote({ title: '', content: '', tripId: '', mood: '' }); setShowForm(false); }
   };
 
-  const filtered = filter === 'All' ? notes : notes.filter(n => n.tripName === filter);
+  const deleteNote = async (id) => {
+    setNotes(notes.filter(n => n.id !== id));
+    await supabase.from('notes').delete().eq('id', id);
+  };
+
+  if (loading) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <p className="text-slate-500 font-bold">Loading Journal...</p>
+    </div>
+  );
+
+  const filtered = filter === 'All' ? notes : notes.filter(n => n.trips?.name === filter);
+  const getMood = (label) => moods.find(m => m.label === label);
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0d1117 0%, #1a1f3c 100%)' }}>
-
+    <div className="min-h-screen bg-slate-50">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 sticky top-0 z-50"
-        style={{ background: 'rgba(13,17,23,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white">← Back</button>
-          <span className="font-bold text-white">📓 Trip Journal</span>
+      <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-slate-900 transition-colors p-2 hover:bg-slate-50 rounded-full">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <span className="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-orange-500" /> Trip Journal
+          </span>
         </div>
         <button onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-xl text-sm font-semibold text-white"
-          style={{ background: 'linear-gradient(135deg, #f5a623, #f093fb)' }}>
-          + New Note
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-md">
+          <Plus className="w-4 h-4" /> New Note
         </button>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-6 md:px-12 py-8">
 
         {/* Add Note Form */}
         {showForm && (
-          <div className="p-6 rounded-2xl mb-6"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245,166,35,0.3)' }}>
-            <h3 className="text-white font-bold text-lg mb-4">✍️ Write New Note</h3>
-            <div className="space-y-3">
-              <input
-                placeholder="Note title..."
-                value={newNote.title}
-                onChange={e => setNewNote({ ...newNote, title: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-              />
-              <textarea
-                placeholder="Write your travel memories, tips, reminders..."
-                value={newNote.content}
-                onChange={e => setNewNote({ ...newNote, content: e.target.value })}
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none resize-none"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-              />
-
-              {/* Trip Select */}
-              <select
-                value={newNote.tripId}
-                onChange={e => setNewNote({ ...newNote, tripId: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                <option value="">Select Trip (optional)</option>
-                {trips.map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-
-              {/* Mood */}
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-slate-900 text-xl flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-orange-500" /> Write New Note
+              </h3>
+              <button onClick={() => setShowForm(false)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
               <div>
-                <p className="text-gray-400 text-xs mb-2">How are you feeling?</p>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Note Title</label>
+                <input placeholder="e.g. Sunrise at the Eiffel Tower..."
+                  value={newNote.title} onChange={e => setNewNote({ ...newNote, title: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Your Memory</label>
+                <textarea placeholder="Write your travel memories, tips, reminders..."
+                  value={newNote.content} onChange={e => setNewNote({ ...newNote, content: e.target.value })}
+                  rows={4} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none font-medium text-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Trip</label>
+                <select value={newNote.tripId} onChange={e => setNewNote({ ...newNote, tripId: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-900">
+                  <option value="">Select Trip (Required)</option>
+                  {trips.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">How are you feeling?</label>
                 <div className="flex gap-2 flex-wrap">
-                  {moods.map(m => (
-                    <button key={m.label}
-                      onClick={() => setNewNote({ ...newNote, mood: m.label })}
-                      className="px-3 py-1.5 rounded-full text-xs transition-all"
-                      style={{
-                        background: newNote.mood === m.label ? 'rgba(245,166,35,0.3)' : 'rgba(255,255,255,0.06)',
-                        border: `1px solid ${newNote.mood === m.label ? '#f5a623' : 'rgba(255,255,255,0.1)'}`,
-                        color: newNote.mood === m.label ? '#f5a623' : '#9ca3af'
-                      }}>
-                      {m.emoji} {m.label}
-                    </button>
-                  ))}
+                  {moods.map(m => {
+                    const Icon = m.icon;
+                    const isSelected = newNote.mood === m.label;
+                    return (
+                      <button key={m.label} onClick={() => setNewNote({ ...newNote, mood: m.label })}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${isSelected ? `${m.bg} border-transparent ${m.color}` : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                        <Icon className="w-3.5 h-3.5" /> {m.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-
-              <div className="flex gap-2">
-                <button onClick={saveNote}
-                  className="flex-1 py-3 rounded-xl font-semibold text-white text-sm"
-                  style={{ background: 'linear-gradient(135deg, #f5a623, #f093fb)' }}>
-                  💾 Save Note
-                </button>
-                <button onClick={() => setShowForm(false)}
-                  className="px-6 py-3 rounded-xl text-sm"
-                  style={{ background: 'rgba(255,255,255,0.08)', color: '#9ca3af' }}>
-                  Cancel
-                </button>
-              </div>
+              <button onClick={saveNote} className="w-full py-3.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-md mt-2">
+                Save Note
+              </button>
             </div>
           </div>
         )}
 
-        {/* Filter by Trip */}
-        <div className="flex gap-2 flex-wrap mb-6">
+        {/* Filter Tabs */}
+        <div className="flex gap-2 flex-wrap mb-8">
           <button onClick={() => setFilter('All')}
-            className="px-4 py-1.5 rounded-full text-sm transition-all"
-            style={{
-              background: filter === 'All' ? 'linear-gradient(135deg, #f5a623, #f093fb)' : 'rgba(255,255,255,0.06)',
-              color: filter === 'All' ? 'white' : '#9ca3af',
-              border: filter === 'All' ? 'none' : '1px solid rgba(255,255,255,0.1)'
-            }}>
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${filter === 'All' ? 'bg-blue-600 text-white border-transparent shadow-md shadow-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}>
             All Notes
           </button>
           {trips.map(t => (
-            <button key={t.id}
-              onClick={() => setFilter(t.name)}
-              className="px-4 py-1.5 rounded-full text-sm transition-all"
-              style={{
-                background: filter === t.name ? 'rgba(245,166,35,0.3)' : 'rgba(255,255,255,0.06)',
-                color: filter === t.name ? '#f5a623' : '#9ca3af',
-                border: filter === t.name ? '1px solid #f5a623' : '1px solid rgba(255,255,255,0.1)'
-              }}>
+            <button key={t.id} onClick={() => setFilter(t.name)}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${filter === t.name ? 'bg-blue-600 text-white border-transparent shadow-md shadow-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}>
               {t.name}
             </button>
           ))}
@@ -171,49 +155,54 @@ export default function Journal() {
 
         {/* Empty State */}
         {filtered.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-7xl mb-4">📓</div>
-            <h3 className="text-xl font-bold text-white mb-2">No notes yet!</h3>
-            <p className="text-gray-400 mb-6">Start writing your travel memories</p>
+          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <BookOpen className="w-10 h-10 text-slate-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No notes yet!</h3>
+            <p className="text-slate-500 mb-6">Start writing your travel memories</p>
             <button onClick={() => setShowForm(true)}
-              className="px-6 py-3 rounded-xl font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f093fb)' }}>
-              ✍️ Write First Note
+              className="px-6 py-3 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-md">
+              Write First Note
             </button>
           </div>
         )}
 
         {/* Notes Grid */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-4">
           {filtered.map(note => {
-            const mood = moods.find(m => m.label === note.mood);
+            const mood = getMood(note.mood);
+            const MoodIcon = mood?.icon;
             return (
-              <div key={note.id} className="p-5 rounded-2xl transition-all"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    {mood && <span className="text-xl">{mood.emoji}</span>}
-                    <h3 className="font-bold text-white">{note.title}</h3>
+              <div key={note.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:border-slate-200 hover:shadow-md transition-all group">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    {mood && MoodIcon && (
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${mood.bg} ${mood.color}`}>
+                        <MoodIcon className="w-5 h-5" />
+                      </div>
+                    )}
+                    <h3 className="font-bold text-slate-900 text-lg">{note.title}</h3>
                   </div>
                   <button onClick={() => deleteNote(note.id)}
-                    className="text-gray-600 hover:text-red-400 text-sm">🗑️</button>
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-3">{note.content}</p>
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-2">
-                    <span className="text-xs px-2 py-1 rounded-full"
-                      style={{ background: 'rgba(245,166,35,0.2)', color: '#f5a623' }}>
-                      ✈️ {note.tripName}
+                <p className="text-slate-600 text-sm leading-relaxed mb-4">{note.content}</p>
+                <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+                  <div className="flex gap-2 flex-wrap">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-600 flex items-center gap-1.5">
+                      <Plane className="w-3 h-3" /> {note.trips?.name || 'Unknown Trip'}
                     </span>
-                    {note.mood && (
-                      <span className="text-xs px-2 py-1 rounded-full"
-                        style={{ background: 'rgba(255,255,255,0.08)', color: '#9ca3af' }}>
+                    {note.mood && mood && (
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${mood.bg} ${mood.color}`}>
                         {note.mood}
                       </span>
                     )}
                   </div>
-                  <span className="text-gray-600 text-xs">
-                    {new Date(note.createdAt).toLocaleDateString('en-IN')}
+                  <span className="text-slate-400 text-xs font-medium flex items-center gap-1">
+                    <Calendar className="w-3 h-3" /> {new Date(note.created_at).toLocaleDateString('en-IN')}
                   </span>
                 </div>
               </div>

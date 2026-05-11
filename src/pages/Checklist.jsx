@@ -1,248 +1,244 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { 
+  Shirt, FileText, Laptop, Droplets, Pill, Briefcase,
+  ArrowLeft, RotateCcw, Plus, CheckCircle2, Circle, Trash2
+} from 'lucide-react';
 
 const defaultItems = [
-  { name: 'Passport', category: 'Documents' },
-  { name: 'Visa', category: 'Documents' },
-  { name: 'Flight Tickets', category: 'Documents' },
-  { name: 'Hotel Booking', category: 'Documents' },
-  { name: 'Travel Insurance', category: 'Documents' },
-  { name: 'T-Shirts', category: 'Clothing' },
-  { name: 'Pants/Jeans', category: 'Clothing' },
-  { name: 'Comfortable Shoes', category: 'Clothing' },
-  { name: 'Jacket', category: 'Clothing' },
-  { name: 'Phone Charger', category: 'Electronics' },
-  { name: 'Power Bank', category: 'Electronics' },
-  { name: 'Earphones', category: 'Electronics' },
-  { name: 'Camera', category: 'Electronics' },
-  { name: 'Toothbrush', category: 'Toiletries' },
-  { name: 'Sunscreen', category: 'Toiletries' },
-  { name: 'Pain Killers', category: 'Medicine' },
+  { task: 'Passport', category: 'Documents' },
+  { task: 'Visa', category: 'Documents' },
+  { task: 'Flight Tickets', category: 'Documents' },
+  { task: 'Hotel Booking', category: 'Documents' },
+  { task: 'Travel Insurance', category: 'Documents' },
+  { task: 'T-Shirts', category: 'Clothing' },
+  { task: 'Pants/Jeans', category: 'Clothing' },
+  { task: 'Comfortable Shoes', category: 'Clothing' },
+  { task: 'Jacket', category: 'Clothing' },
+  { task: 'Phone Charger', category: 'Electronics' },
+  { task: 'Power Bank', category: 'Electronics' },
+  { task: 'Earphones', category: 'Electronics' },
+  { task: 'Camera', category: 'Electronics' },
+  { task: 'Toothbrush', category: 'Toiletries' },
+  { task: 'Sunscreen', category: 'Toiletries' },
+  { task: 'Pain Killers', category: 'Medicine' },
 ];
 
 export default function Checklist() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState({ name: '', category: '' });
+  const [newItem, setNewItem] = useState({ task: '', category: '' });
   const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
 
   const categories = [
-    { label: 'Clothing', emoji: '👕', color: '#3b82f6' },
-    { label: 'Documents', emoji: '📄', color: '#f5a623' },
-    { label: 'Electronics', emoji: '💻', color: '#7c3aed' },
-    { label: 'Toiletries', emoji: '🧴', color: '#06b6d4' },
-    { label: 'Medicine', emoji: '💊', color: '#ef4444' },
-    { label: 'Other', emoji: '🎒', color: '#6b7280' },
+    { label: 'Clothing', icon: Shirt, color: 'text-blue-600', bg: 'bg-blue-50', hex: '#2563eb' },
+    { label: 'Documents', icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50', hex: '#d97706' },
+    { label: 'Electronics', icon: Laptop, color: 'text-purple-600', bg: 'bg-purple-50', hex: '#9333ea' },
+    { label: 'Toiletries', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-50', hex: '#0891b2' },
+    { label: 'Medicine', icon: Pill, color: 'text-red-600', bg: 'bg-red-50', hex: '#dc2626' },
+    { label: 'Other', icon: Briefcase, color: 'text-slate-600', bg: 'bg-slate-100', hex: '#475569' },
   ];
 
-// eslint-disable-next-line react-hooks/exhaustive-deps
-useEffect(() => {
-    const saved = localStorage.getItem('traveloop_checklist');
-    if (saved) {
-      setItems(JSON.parse(saved));
+  useEffect(() => { fetchChecklist(); }, [navigate]);
+
+  const fetchChecklist = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate('/login'); return; }
+
+    const { data, error } = await supabase
+      .from('checklist').select('*').eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+
+    if (error) { console.error(error); return; }
+
+    if (data && data.length > 0) {
+      setItems(data);
     } else {
-      const defaults = defaultItems.map((item, i) => ({
-        ...item, id: i + 1, packed: false
+      const defaultData = defaultItems.map(item => ({
+        user_id: user.id, task: item.task, category: item.category, is_completed: false
       }));
-      setItems(defaults);
-      localStorage.setItem('traveloop_checklist', JSON.stringify(defaults));
+      const { data: inserted } = await supabase.from('checklist').insert(defaultData).select();
+      if (inserted) setItems(inserted);
     }
-  }, []);
-
-  const saveItems = (updated) => {
-    setItems(updated);
-    localStorage.setItem('traveloop_checklist', JSON.stringify(updated));
+    setLoading(false);
   };
 
-  const toggleItem = (id) => {
-    saveItems(items.map(item => item.id === id ? { ...item, packed: !item.packed } : item));
+  const toggleItem = async (id, currentStatus) => {
+    setItems(items.map(item => item.id === id ? { ...item, is_completed: !currentStatus } : item));
+    await supabase.from('checklist').update({ is_completed: !currentStatus }).eq('id', id);
   };
 
-  const addItem = () => {
-    if (!newItem.name) return;
-    const item = {
-      id: Date.now(),
-      name: newItem.name,
-      category: newItem.category || 'Other',
-      packed: false
-    };
-    saveItems([...items, item]);
-    setNewItem({ name: '', category: '' });
+  const addItem = async () => {
+    if (!newItem.task) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const itemData = { user_id: user.id, task: newItem.task, category: newItem.category || 'Other', is_completed: false };
+    const { data } = await supabase.from('checklist').insert([itemData]).select().single();
+    if (data) { setItems([...items, data]); setNewItem({ task: '', category: '' }); }
   };
 
-  const removeItem = (id) => {
-    saveItems(items.filter(i => i.id !== id));
+  const removeItem = async (id) => {
+    setItems(items.filter(i => i.id !== id));
+    await supabase.from('checklist').delete().eq('id', id);
   };
 
-  const resetAll = () => {
-    saveItems(items.map(i => ({ ...i, packed: false })));
+  const resetAll = async () => {
+    setItems(items.map(i => ({ ...i, is_completed: false })));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await supabase.from('checklist').update({ is_completed: false }).eq('user_id', user.id);
   };
 
-  const filtered = filter === 'All' ? items : items.filter(i => i.category === filter);
-  const packedCount = items.filter(i => i.packed).length;
+  if (loading) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <p className="text-slate-500 font-bold">Loading Checklist...</p>
+    </div>
+  );
+
+  const filtered = filter === 'All' ? items : filter === 'unpacked' ? items.filter(i => !i.is_completed) : items.filter(i => i.category === filter);
+  const packedCount = items.filter(i => i.is_completed).length;
   const percentage = items.length > 0 ? Math.round((packedCount / items.length) * 100) : 0;
 
-  const catColors = Object.fromEntries(categories.map(c => [c.label, c.color]));
-  const catEmojis = Object.fromEntries(categories.map(c => [c.label, c.emoji]));
+  const getCat = (label) => categories.find(c => c.label === label) || categories[5];
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0d1117 0%, #1a1f3c 100%)' }}>
-
+    <div className="min-h-screen bg-slate-50">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 sticky top-0 z-50"
-        style={{ background: 'rgba(13,17,23,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white">← Back</button>
-          <span className="font-bold text-white">🎒 Packing Checklist</span>
+      <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-slate-900 transition-colors p-2 hover:bg-slate-50 rounded-full">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <span className="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-blue-600" /> Packing Checklist
+          </span>
         </div>
-        <button onClick={resetAll}
-          className="px-4 py-2 rounded-xl text-sm font-semibold"
-          style={{ background: 'rgba(255,255,255,0.08)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.1)' }}>
-          Reset All
+        <button onClick={resetAll} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm">
+          <RotateCcw className="w-4 h-4" /> Reset All
         </button>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-6 md:px-12 py-8">
 
         {/* Progress */}
-        <div className="p-6 rounded-2xl mb-6"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="flex justify-between items-center mb-3">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-8">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-xl font-bold text-white">Packing Progress</h2>
-              <p className="text-gray-400 text-sm">{packedCount} of {items.length} items packed</p>
+              <h2 className="text-xl font-bold text-slate-900">Packing Progress</h2>
+              <p className="text-slate-500 text-sm mt-1">{packedCount} of {items.length} items packed</p>
             </div>
-            <div className="text-4xl font-bold" style={{ color: percentage === 100 ? '#22c55e' : '#f5a623' }}>
+            <div className={`text-4xl font-black ${percentage === 100 ? 'text-green-600' : 'text-blue-600'}`}>
               {percentage}%
             </div>
           </div>
-          <div className="w-full h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="w-full h-3 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
             <div className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${percentage}%`,
-                background: percentage === 100 ? '#22c55e' : 'linear-gradient(90deg, #f5a623, #f093fb)'
-              }} />
+              style={{ width: `${percentage}%`, background: percentage === 100 ? '#16a34a' : '#2563eb' }} />
           </div>
           {percentage === 100 && (
-            <p className="text-center mt-3 text-green-400 font-semibold">🎉 All packed! Ready to go!</p>
+            <p className="text-center mt-4 text-green-600 font-bold flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-5 h-5" /> All packed! Ready to go!
+            </p>
           )}
         </div>
 
         {/* Category Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
           {categories.map(cat => {
+            const Icon = cat.icon;
             const catItems = items.filter(i => i.category === cat.label);
-            const catPacked = catItems.filter(i => i.packed).length;
+            const catPacked = catItems.filter(i => i.is_completed).length;
+            const isActive = filter === cat.label;
             return (
-              <div key={cat.label} className="p-3 rounded-xl text-center cursor-pointer transition-all"
-                style={{
-                  background: filter === cat.label ? `${cat.color}22` : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${filter === cat.label ? cat.color : 'rgba(255,255,255,0.08)'}`
-                }}
-                onClick={() => setFilter(filter === cat.label ? 'All' : cat.label)}>
-                <div className="text-xl mb-1">{cat.emoji}</div>
-                <div className="text-xs text-gray-400">{cat.label}</div>
-                <div className="text-sm font-bold" style={{ color: cat.color }}>
-                  {catPacked}/{catItems.length}
+              <div key={cat.label}
+                className={`p-3 rounded-2xl text-center cursor-pointer transition-all border ${isActive ? `${cat.bg} border-transparent` : 'bg-white border-slate-200 hover:border-slate-300'}`}
+                onClick={() => setFilter(isActive ? 'All' : cat.label)}>
+                <div className={`w-8 h-8 rounded-xl mx-auto mb-2 flex items-center justify-center ${isActive ? 'bg-white shadow-sm' : cat.bg}`}>
+                  <Icon className={`w-4 h-4 ${cat.color}`} />
                 </div>
+                <div className="text-[10px] font-bold text-slate-500 truncate">{cat.label}</div>
+                <div className={`text-xs font-black ${cat.color}`}>{catPacked}/{catItems.length}</div>
               </div>
             );
           })}
         </div>
 
         {/* Add Item */}
-        <div className="p-5 rounded-2xl mb-6"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <h3 className="text-white font-semibold mb-3">+ Add Item</h3>
-          <div className="flex gap-2 mb-3">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-8">
+          <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <Plus className="w-5 h-5 text-blue-600" /> Add Item
+          </h3>
+          <div className="flex gap-3 mb-4">
             <input
               placeholder="Item name..."
-              value={newItem.name}
-              onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-              onKeyPress={e => e.key === 'Enter' && addItem()}
-              className="flex-1 px-4 py-2.5 rounded-xl text-white text-sm outline-none"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+              value={newItem.task}
+              onChange={e => setNewItem({ ...newItem, task: e.target.value })}
+              onKeyDown={e => e.key === 'Enter' && addItem()}
+              className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 font-medium"
             />
-            <button onClick={addItem}
-              className="px-4 py-2.5 rounded-xl font-semibold text-white text-sm"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f093fb)' }}>
+            <button onClick={addItem} className="px-6 py-3 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-md">
               Add
             </button>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {categories.map(cat => (
-              <button key={cat.label}
-                onClick={() => setNewItem({ ...newItem, category: cat.label })}
-                className="px-3 py-1 rounded-full text-xs transition-all"
-                style={{
-                  background: newItem.category === cat.label ? `${cat.color}33` : 'rgba(255,255,255,0.06)',
-                  border: `1px solid ${newItem.category === cat.label ? cat.color : 'rgba(255,255,255,0.1)'}`,
-                  color: newItem.category === cat.label ? cat.color : '#9ca3af'
-                }}>
-                {cat.emoji} {cat.label}
-              </button>
-            ))}
+            {categories.map(cat => {
+              const Icon = cat.icon;
+              const isSelected = newItem.category === cat.label;
+              return (
+                <button key={cat.label}
+                  onClick={() => setNewItem({ ...newItem, category: cat.label })}
+                  className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${isSelected ? `${cat.bg} border-transparent ${cat.color}` : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                  <Icon className="w-3.5 h-3.5" /> {cat.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 flex-wrap mb-4">
-          <button onClick={() => setFilter('All')}
-            className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
-            style={{
-              background: filter === 'All' ? 'linear-gradient(135deg, #f5a623, #f093fb)' : 'rgba(255,255,255,0.06)',
-              color: filter === 'All' ? 'white' : '#9ca3af',
-              border: filter === 'All' ? 'none' : '1px solid rgba(255,255,255,0.1)'
-            }}>
-            All ({items.length})
-          </button>
-          <button onClick={() => setFilter('unpacked')}
-            className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
-            style={{
-              background: filter === 'unpacked' ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.06)',
-              color: filter === 'unpacked' ? '#ef4444' : '#9ca3af',
-              border: filter === 'unpacked' ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)'
-            }}>
-            Unpacked ({items.filter(i => !i.packed).length})
-          </button>
+        <div className="flex gap-2 flex-wrap mb-6">
+          {['All', 'unpacked'].map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${filter === f ? 'bg-blue-600 text-white border-transparent shadow-md shadow-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}>
+              {f === 'All' ? `All (${items.length})` : `Unpacked (${items.filter(i => !i.is_completed).length})`}
+            </button>
+          ))}
         </div>
 
         {/* Items List */}
-        <div className="space-y-2">
-          {(filter === 'unpacked' ? items.filter(i => !i.packed) : filtered).map(item => (
-            <div key={item.id}
-              className="flex items-center gap-3 p-4 rounded-xl transition-all"
-              style={{
-                background: item.packed ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${item.packed ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'}`,
-                opacity: item.packed ? 0.7 : 1
-              }}>
-              {/* Checkbox */}
-              <button onClick={() => toggleItem(item.id)}
-                className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center transition-all"
-                style={{
-                  background: item.packed ? '#22c55e' : 'transparent',
-                  border: `2px solid ${item.packed ? '#22c55e' : 'rgba(255,255,255,0.2)'}`
-                }}>
-                {item.packed && <span className="text-white text-xs">✓</span>}
-              </button>
+        <div className="space-y-3">
+          {filtered.map(item => {
+            const cat = getCat(item.category);
+            const Icon = cat.icon;
+            return (
+              <div key={item.id}
+                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all group ${item.is_completed ? 'bg-green-50 border-green-100 opacity-70' : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-sm'}`}>
+                <button onClick={() => toggleItem(item.id, item.is_completed)}
+                  className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center transition-all border-2 ${item.is_completed ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300 hover:border-blue-400'}`}>
+                  {item.is_completed && <CheckCircle2 className="w-4 h-4" />}
+                </button>
 
-              {/* Item Info */}
-              <span className="text-lg">{catEmojis[item.category] || '🎒'}</span>
-              <div className="flex-1">
-                <p className="text-sm font-medium"
-                  style={{ color: item.packed ? '#6b7280' : 'white', textDecoration: item.packed ? 'line-through' : 'none' }}>
-                  {item.name}
-                </p>
-                <span className="text-xs px-2 rounded-full"
-                  style={{ background: `${catColors[item.category] || '#6b7280'}22`, color: catColors[item.category] || '#6b7280' }}>
-                  {item.category}
-                </span>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.bg} ${cat.color} flex-shrink-0`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+
+                <div className="flex-1">
+                  <p className={`font-bold text-sm ${item.is_completed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                    {item.task}
+                  </p>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${cat.bg} ${cat.color}`}>
+                    {item.category}
+                  </span>
+                </div>
+
+                <button onClick={() => removeItem(item.id)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all">
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
-
-              <button onClick={() => removeItem(item.id)} className="text-gray-600 hover:text-red-400 text-sm">✕</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
